@@ -12,11 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
-import { Link } from 'expo-router';
+import { API } from '@/lib/api';
+import { Link, useRouter } from 'expo-router';
 import React from "react";
 import { ActivityIndicator, View } from "react-native";
 
 export default function New() {
+  const router = useRouter()
   const [username, onChangeUName] = React.useState('')
   const [email, onChangeEmail] = React.useState('')
   const [password, onChangePassword] = React.useState('')
@@ -32,29 +34,26 @@ export default function New() {
   const makeCreateAccountRequest = async () => {
 
     onPageStateChange({loading: true})
-    try {
-      const response = await fetch('http://localhost:8080/api/v1/users', {
-        method: 'POST',
-        body: JSON.stringify({
-            username: username,
-            password: password,
-            email: email
-        })
-      });
-      const json = await response.json();
-
-      if (response.status === 400) {
+    API.POST("/users", { username: username, password: password, email: email },
+      (response : any) => {
+        console.log("success: ", response)
+        API.SetBearerToken(response.session)
+        router.navigate("/account/setup")
+        onPageStateChange({loading: false})
+      },
+      (json : any) => {
+        console.log("failure: ", json)
         const tmp = { username: {valid: true, reason: ""}, email: {valid: true, reason: ""}, password: {valid: true, reason: ""}}
         Object.assign(tmp, (json.username ? {username: json.username} : {username: {valid: true, reason: ""}}))
         Object.assign(tmp, (json.email ? {email: json.email} : {email: {valid: true, reason: ""}}))
         Object.assign(tmp, (json.password ? {password: json.password} : {password: {valid: true, reason: ""}}))
         onValidationChange(tmp)
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      onPageStateChange({loading: false})
-    }
+        onPageStateChange({loading: false})
+      },
+      (error : Error) => {
+        console.error(error);
+        onPageStateChange({loading: false})
+      })
   }
 
   const validatePassword = (a : string, b : string) => {

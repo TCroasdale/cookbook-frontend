@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,23 +11,65 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
-import { Link } from 'expo-router';
-import React from "react";
+import { API } from '@/lib/api';
+import * as Haptics from 'expo-haptics';
+import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 export default function New() {
-  const [username, onChangeUName] = React.useState('')
-  const [email, onChangeEmail] = React.useState('')
-  const [password, onChangePassword] = React.useState('')
-  const [confPass, onChangeConfPass] = React.useState('')
+  const [name, onChangeName] = React.useState('')
+  const [isPublic, onChangePublic] = React.useState(false)
   const [validation, onValidationChange] = React.useState({
     username: {valid: true, reason: ""},
     email: {valid: true, reason: ""}, 
     password: {valid: true, reason: ""}
   })
-
   const [pageState, onPageStateChange] = React.useState({loading: false})
+  const [hasData, onHasDataChange] = React.useState(false)
+  const [userData, onUserDataChange] = React.useState({email: "", userName: ""})
+
+  const makeSaveProfileRequest = () => {
+    onPageStateChange({loading: true})
+    API.PATCH("/profile", {name, isPublic}, 
+      (response : any) => {
+        console.log("finished")
+        onPageStateChange({loading: false})
+      },
+      (response : any) => {
+        console.log("validation errors")
+        onPageStateChange({loading: false})
+      },
+      (error : Error) => {
+        console.error(error)
+        onPageStateChange({loading: false})
+      }
+    )
+  }
+
+  function onSwitchLabelPress() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onChangePublic((prev) => !prev);
+  }
+ 
+  function onCheckedChange(checked: boolean) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onChangePublic(checked);
+  }
+
+  useEffect(() => {
+    API.GET('/users/self',
+      (response : any) => {
+        console.log(response)
+        onUserDataChange(response)
+        onHasDataChange(true)
+      },
+      (response : any) => {console.log(response)},
+      (error : Error) => {console.error(error)},
+    )
+  }, [])
 
   return (
     <View>
@@ -40,30 +82,68 @@ export default function New() {
         {pageState.loading ?
         <ActivityIndicator size="large" />
       : <CardContent>
-          <View className="mb-2">
-            {validation.username.valid ? <Label htmlFor="username">Your username</Label> :
-            <Badge className="text-white text-sm" variant="destructive"><Text>{validation.username.reason}</Text></Badge> }
-            <Input
-              id="username"
-              className="my-2"
-              keyboardType="default"
-              textContentType="username"
-              autoComplete="username"
-              placeholder="Your username..."
-              onChangeText={(x) => { onChangeUName(x); resetUNameValidation()}}
-              value={username}
-            />
-            <CardDescription className="text-sm">username must only contain letters and numbers and be less than 16 characters </CardDescription>
+          <View className="grid grid-cols-5 mb-2 gap-2">
+            <View className="col-span-1 w-full aspect-square  ">
+              {hasData ?
+              <Avatar alt="Your Avatar" className="mx-auto w-full h-full aspect-square">
+                <AvatarImage source={{ uri: 'https://github.com/mrzachnugent.png' }} />
+                <AvatarFallback>
+                  <Text>ZN</Text>
+                </AvatarFallback>
+              </Avatar>
+              :
+              <Skeleton className="mx-auto w-full h-full aspect-square rounded-full" />}
+            </View>
+            {hasData ?
+            <View className="col-span-4">
+              <CardDescription className="mb-0">@{userData.userName}</CardDescription>
+              <Input
+                id="name"
+                className=""
+                keyboardType="default"
+                textContentType="name"
+                autoComplete="name"
+                placeholder="Your name..."
+                onChangeText={onChangeName}
+                value={name}
+              />
+            </View>
+            :
+            <View className="col-span-4 grid grid-rows-2 place-items-center">
+              <Skeleton className="h-2 w-full row-span-1"></Skeleton>
+              <Skeleton className="h-2 w-full row-span-1"></Skeleton>
+            </View>}
           </View>
+          { hasData ?
+          <View className="grid grid-cols-5 items-center gap-2">
+            <Switch
+              checked={isPublic}
+              onCheckedChange={onCheckedChange}
+              id="isPublicSwitch"
+              nativeID="isPublicSwitch"
+              className="col-span-1 mx-auto"
+            />
+            <View className="col-span-4">
+              <Label nativeID="isPublicSwitch" htmlFor="isPublicSwitch" onPress={onSwitchLabelPress}>
+                {
+                  isPublic ?
+                  "Your profile will be public" :
+                  "Your profile will be hidden"
+                }
+              </Label>
+            </View>
+          </View>
+          :
+          <Skeleton className="h-2 mx-auto mt-2 w-3/4"></Skeleton>
+          }
             
         </CardContent>}
         <Separator />
         <CardFooter>
           <View className="w-full mx-auto">
-            <Button className="w-full" onPress={() => makeCreateAccountRequest()}>
-              <Text>Create Account</Text>
+            <Button className="w-full" onPress={() => makeSaveProfileRequest()}>
+              <Text>Save Profile</Text>
             </Button>
-            <CardDescription className="mx-auto">Already have an account? <Link href="/account/signin">Sign In</Link></CardDescription>
           </View>
         </CardFooter>
       </Card>
