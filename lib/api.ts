@@ -28,7 +28,7 @@ const Api = () => {
     }
 
 
-    const doRequest = async (method : string, path : string, body: Object | undefined, onSuccess : Function, onFailure : Function, onError : Function) => {
+    const doRequest = async (method : string, path : string, body: Object | FormData | undefined, onSuccess : Function, onFailure : Function, onError : Function) => {
         let url = baseURL
         if (removePathSlash && path.startsWith("/")) {
             url += path.slice(1)
@@ -41,10 +41,14 @@ const Api = () => {
         try {
             const response = await fetch(url, {
                 method: method,
-                body: (body === undefined ? undefined : JSON.stringify(body)),
+                body: body,
                 headers: await getHeaders()
             });
-            const json = await response.json();
+
+            let json = undefined
+            if (response.headers.get("Content-Length") != "0") {
+                json = await response.json();
+            }
 
             if (successCodes.includes(response.status)) {
                 onSuccess(json)
@@ -64,13 +68,16 @@ const Api = () => {
 
     return {
         async POST (path : string, body: Object, onSuccess : Function, onFailure : Function, onError : Function) {
-            doRequest('POST', path, body, onSuccess, onFailure, onError)
+            doRequest('POST', path, JSON.stringify(body), onSuccess, onFailure, onError)
         },
         async PATCH (path : string, body: Object, onSuccess : Function, onFailure : Function, onError : Function) {
-            doRequest('PATCH', path, body, onSuccess, onFailure, onError)
+            doRequest('PATCH', path, JSON.stringify(body), onSuccess, onFailure, onError)
         },
         async GET (path : string, onSuccess : Function, onFailure : Function, onError : Function) {
             doRequest('GET', path, undefined, onSuccess, onFailure, onError)
+        },
+        async UPLOAD (path : string, body: FormData, onSuccess : Function, onFailure : Function, onError : Function) {
+            doRequest('POST', path, body, onSuccess, onFailure, onError)
         },
         async SetBearerToken(token : string) {
             await Storage.setItem('secure_token', token);

@@ -15,11 +15,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { API } from '@/lib/api';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
-import React, { useEffect } from "react";
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 export default function New() {
+  const router = useRouter()
   const [name, onChangeName] = React.useState('')
   const [isPublic, onChangePublic] = React.useState(false)
   const [validation, onValidationChange] = React.useState({
@@ -28,8 +31,34 @@ export default function New() {
     password: {valid: true, reason: ""}
   })
   const [pageState, onPageStateChange] = React.useState({loading: false})
+  const [fileName, onFileNameChange] = React.useState('')
   const [hasData, onHasDataChange] = React.useState(false)
   const [userData, onUserDataChange] = React.useState({email: "", userName: ""})
+  const inputFile = useRef<HTMLInputElement | null>(null);
+
+  const startPhotoUpload = () => {
+    if (inputFile.current === null || inputFile.current.files === null) return
+
+    const file = inputFile.current.files[0]
+    if (file == null) return
+
+    var data = new FormData()
+    data.append('photo', file)
+    API.UPLOAD("/photo", data, 
+      (response : any) => {
+        console.log("finished")
+        makeSaveProfileRequest()
+      },
+      (response : any) => {
+        console.log("validation errors")
+        onPageStateChange({loading: false})
+      },
+      (error : Error) => {
+        console.error(error)
+        onPageStateChange({loading: false})
+      }
+    )
+  }
 
   const makeSaveProfileRequest = () => {
     onPageStateChange({loading: true})
@@ -37,6 +66,7 @@ export default function New() {
       (response : any) => {
         console.log("finished")
         onPageStateChange({loading: false})
+        router.navigate("/")
       },
       (response : any) => {
         console.log("validation errors")
@@ -57,6 +87,21 @@ export default function New() {
   function onCheckedChange(checked: boolean) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onChangePublic(checked);
+  }
+
+  const openFileDialog = () => {
+    if (inputFile.current !== null) {
+      inputFile.current.click()
+    }
+  }
+
+  const onFileChange = () => {
+    if (inputFile.current !== null && inputFile.current.files !== null) {
+      const file = inputFile.current.files[0]
+      if (file == null) return
+      const uri = URL.createObjectURL(file)
+      onFileNameChange(uri)
+    }
   }
 
   useEffect(() => {
@@ -85,11 +130,12 @@ export default function New() {
           <View className="grid grid-cols-5 mb-2 gap-2">
             <View className="col-span-1 w-full aspect-square  ">
               {hasData ?
-              <Avatar alt="Your Avatar" className="mx-auto w-full h-full aspect-square">
-                <AvatarImage source={{ uri: 'https://github.com/mrzachnugent.png' }} />
+              <Avatar alt="Your Avatar" className="mx-auto w-full h-full aspect-square" onClick={openFileDialog} >
+                <AvatarImage source={{ uri: fileName }} />
                 <AvatarFallback>
-                  <Text>ZN</Text>
+                  <Ionicons name="camera" size={32} color="gray" />
                 </AvatarFallback>
+                <input ref={inputFile} type="file" accept="image/jpeg" onChange={onFileChange}/>
               </Avatar>
               :
               <Skeleton className="mx-auto w-full h-full aspect-square rounded-full" />}
@@ -141,7 +187,7 @@ export default function New() {
         <Separator />
         <CardFooter>
           <View className="w-full mx-auto">
-            <Button className="w-full" onPress={() => makeSaveProfileRequest()}>
+            <Button className="w-full" onPress={() => startPhotoUpload()}>
               <Text>Save Profile</Text>
             </Button>
           </View>
