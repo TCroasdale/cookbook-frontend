@@ -116,8 +116,7 @@ export default function New() {
       API.POST("/recipe", data,
         (response : any) => {
           console.log("success: ", response)
-          // API.SetBearerToken(response.session)
-          // router.navigate("/account/setup")
+          router.navigate("/recipe/" + response.recipeID)
           onPageStateChange({loading: false})
         },
         (json : any) => {

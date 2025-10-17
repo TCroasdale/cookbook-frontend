@@ -45,6 +45,10 @@ const Api = () => {
                 headers: await getHeaders()
             });
 
+            if (response.headers.get("API-Token") !== null) {
+                await Storage.setItem('secure_token', response.headers.get("API-Token"));
+            }
+            
             let json = undefined
             if (response.headers.get("Content-Length") != "0") {
                 json = await response.json();

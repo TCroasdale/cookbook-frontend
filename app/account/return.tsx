@@ -25,16 +25,15 @@ export default function New() {
   const [confPass, onChangeConfPass] = React.useState('')
   const [validation, onValidationChange] = React.useState({
     username: {valid: true, reason: ""},
-    email: {valid: true, reason: ""}, 
     password: {valid: true, reason: ""}
   })
 
   const [pageState, onPageStateChange] = React.useState({loading: false})
 
-  const makeCreateAccountRequest = async () => {
+  const makeReturnAccountRequest = async () => {
 
     onPageStateChange({loading: true})
-    API.POST("/users", { username: username, password: password, email: email },
+    API.POST("/users/login", { aid: username, pass: password },
       (response : any) => {
         console.log("success: ", response)
         API.SetBearerToken(response.session)
@@ -43,9 +42,8 @@ export default function New() {
       },
       (json : any) => {
         console.log("failure: ", json)
-        const tmp = { username: {valid: true, reason: ""}, email: {valid: true, reason: ""}, password: {valid: true, reason: ""}}
+        const tmp = { username: {valid: true, reason: ""}, password: {valid: true, reason: ""}}
         Object.assign(tmp, (json.username ? {username: json.username} : {username: {valid: true, reason: ""}}))
-        Object.assign(tmp, (json.email ? {email: json.email} : {email: {valid: true, reason: ""}}))
         Object.assign(tmp, (json.password ? {password: json.password} : {password: {valid: true, reason: ""}}))
         onValidationChange(tmp)
         onPageStateChange({loading: false})
@@ -56,27 +54,15 @@ export default function New() {
       })
   }
 
-  const validatePassword = (a : string, b : string) => {
-    if (a != b) {
-      const tmp = { username: validation.username, email: validation.email, password: {valid: true, reason: ""}}
-      Object.assign(tmp, {password: {valid: false, reason: "passwords must match"}})
-      onValidationChange(tmp)
-      return
-    }
-    const tmp = { username: validation.username, email: validation.email, password: {valid: true, reason: ""}}
+  const validatePassword = (a : string) => {
+    const tmp = { username: validation.username, password: {valid: true, reason: ""}}
     Object.assign(tmp, {password: {valid: true, reason: ""}})
     onValidationChange(tmp)
   }
 
   const resetUNameValidation = () => {
-    const tmp = { username: validation.username, email: validation.email, password: validation.password}
+    const tmp = { username: validation.username, password: validation.password}
     Object.assign(tmp, {username: {valid: true, reason: ""}})
-    onValidationChange(tmp)
-  }
-
-  const resetEmailValidation = () => {
-    const tmp = { username: validation.username, email: validation.email, password: validation.password}
-    Object.assign(tmp, {email: {valid: true, reason: ""}})
     onValidationChange(tmp)
   }
 
@@ -84,15 +70,15 @@ export default function New() {
     <View>
       <Card className="w-full max-w-sm mx-auto my-5">
         <CardHeader>
-          <CardTitle>Create Account</CardTitle>
-          <CardDescription>Sign up to save recipes, and add your friends</CardDescription>
+          <CardTitle>Sign in</CardTitle>
+          <CardDescription>Sign in to save recipes, and add your friends</CardDescription>
         </CardHeader>
         <Separator />
         {pageState.loading ?
         <ActivityIndicator size="large" />
       : <CardContent>
           <View className="mb-2">
-            {validation.username.valid ? <Label htmlFor="username">Your username</Label> :
+            {validation.username.valid ? <Label htmlFor="username">Your username or email</Label> :
             <Badge className="text-white text-sm" variant="destructive"><Text>{validation.username.reason}</Text></Badge> }
             <Input
               id="username"
@@ -100,25 +86,9 @@ export default function New() {
               keyboardType="default"
               textContentType="username"
               autoComplete="username"
-              placeholder="Your username..."
+              placeholder="Your username or email..."
               onChangeText={(x) => { onChangeUName(x); resetUNameValidation()}}
               value={username}
-            />
-            <CardDescription className="text-sm">username must only contain letters and numbers and be less than 16 characters </CardDescription>
-          </View>
-
-          <View className="mb-2">
-            {validation.email.valid ? <Label htmlFor="email">Your email</Label> :
-            <Badge className="text-white text-sm" variant="destructive"><Text>{validation.email.reason}</Text></Badge> }
-            <Input
-              id="email"
-              className="my-2"
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              placeholder="Your email..."
-              onChangeText={(x) => { onChangeEmail(x); resetEmailValidation(); }}
-              value={email}
             />
           </View>
 
@@ -133,37 +103,20 @@ export default function New() {
               autoComplete="password"
               placeholder="Your password..."
               passwordRules="minlength: 8; maxlength: 70; required: lower; required: upper; required: digit; required: [-];"
-              onChangeText={(x) => { onChangePassword(x); validatePassword(x, confPass); }}
+              onChangeText={(x) => { onChangePassword(x); validatePassword(x); }}
               value={password}
               secureTextEntry={true}
             />
-
-            <Input
-              id="confPass"
-              className="my-2"
-              keyboardType="default"
-              textContentType="newPassword"
-              autoComplete="password"
-              placeholder="Confirm password..."
-              passwordRules="minlength: 8; maxlength: 70; required: lower; required: upper; required: digit; required: [-];"
-              onChangeText={(x) => { onChangeConfPass(x); validatePassword(password, x); }}
-              value={confPass}
-              secureTextEntry={true}
-            />
-            <CardDescription>password must be 8 characters long, and contain</CardDescription>
-            <CardDescription>1 upper case letter</CardDescription>
-            <CardDescription>1 lower case letter</CardDescription>
-            <CardDescription>1 number</CardDescription>
             
           </View>
         </CardContent>}
         <Separator />
         <CardFooter>
           <View className="w-full mx-auto">
-            <Button className="w-full" onPress={() => makeCreateAccountRequest()}>
-              <Text>Create Account</Text>
+            <Button className="w-full" onPress={() => makeReturnAccountRequest()}>
+              <Text>Sign in</Text>
             </Button>
-            <CardDescription className="mx-auto">Already have an account? <Link href="/account/return">Sign In</Link></CardDescription>
+            <CardDescription className="mx-auto">Looking to make an account? <Link href="/account/new">Create Account</Link></CardDescription>
           </View>
         </CardFooter>
       </Card>
