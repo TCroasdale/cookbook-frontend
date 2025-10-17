@@ -36,9 +36,8 @@ export default function New() {
     API.POST("/users/login", { aid: username, pass: password },
       (response : any) => {
         console.log("success: ", response)
-        API.SetBearerToken(response.session)
-        router.navigate("/account/setup")
-        onPageStateChange({loading: false})
+        API.SetBearerToken(response.token)
+        getProfileRequest()
       },
       (json : any) => {
         console.log("failure: ", json)
@@ -52,6 +51,28 @@ export default function New() {
         console.error(error);
         onPageStateChange({loading: false})
       })
+  }
+
+  const getProfileRequest = async () => {
+    API.GET("/profile",
+      (response : any) => {
+        console.log("success: ", response)
+        onPageStateChange({loading: false})
+        router.navigate(response.isSetup ? "/" : "/account/setup")
+      },
+      (json : any) => {
+        console.log("failure: ", json)
+        const tmp = { username: {valid: true, reason: ""}, password: {valid: true, reason: ""}}
+        Object.assign(tmp, (json.username ? {username: json.username} : {username: {valid: true, reason: ""}}))
+        Object.assign(tmp, (json.password ? {password: json.password} : {password: {valid: true, reason: ""}}))
+        onValidationChange(tmp)
+        onPageStateChange({loading: false})
+      },
+      (error : Error) => {
+        console.error(error);
+        onPageStateChange({loading: false})
+      })
+
   }
 
   const validatePassword = (a : string) => {

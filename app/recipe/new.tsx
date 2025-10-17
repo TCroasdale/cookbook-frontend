@@ -121,11 +121,6 @@ export default function New() {
         },
         (json : any) => {
           console.log("failure: ", json)
-          // const tmp = { username: {valid: true, reason: ""}, email: {valid: true, reason: ""}, password: {valid: true, reason: ""}}
-          // Object.assign(tmp, (json.username ? {username: json.username} : {username: {valid: true, reason: ""}}))
-          // Object.assign(tmp, (json.email ? {email: json.email} : {email: {valid: true, reason: ""}}))
-          // Object.assign(tmp, (json.password ? {password: json.password} : {password: {valid: true, reason: ""}}))
-          // onValidationChange(tmp)
           onPageStateChange({loading: false})
         },
         (error : Error) => {

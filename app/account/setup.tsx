@@ -19,7 +19,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 
 export default function New() {
   const router = useRouter()
@@ -37,7 +37,11 @@ export default function New() {
   const inputFile = useRef<HTMLInputElement | null>(null);
 
   const startPhotoUpload = () => {
-    if (inputFile.current === null || inputFile.current.files === null) return
+    if (inputFile.current === null || inputFile.current.files === null) {
+      console.log("no photo supplied; skipping and going straigtht to editing.")
+      makeSaveProfileRequest()
+      return
+    }
 
     const file = inputFile.current.files[0]
     if (file == null) return
@@ -130,13 +134,15 @@ export default function New() {
           <View className="grid grid-cols-5 mb-2 gap-2">
             <View className="col-span-1 w-full aspect-square  ">
               {hasData ?
-              <Avatar alt="Your Avatar" className="mx-auto w-full h-full aspect-square" onClick={openFileDialog} >
-                <AvatarImage source={{ uri: fileName }} />
-                <AvatarFallback>
-                  <Ionicons name="camera" size={32} color="gray" />
-                </AvatarFallback>
-                <input ref={inputFile} type="file" accept="image/jpeg" onChange={onFileChange}/>
-              </Avatar>
+              <TouchableOpacity onPress={openFileDialog}>
+                <Avatar alt="Your Avatar" className="mx-auto w-full h-full aspect-square" >
+                  <AvatarImage source={{ uri: fileName }} />
+                  <AvatarFallback>
+                    <Ionicons name="camera" size={32} color="gray" />
+                  </AvatarFallback>
+                  <input ref={inputFile} type="file" accept="image/jpeg" onChange={onFileChange}/>
+                </Avatar>
+              </TouchableOpacity>
               :
               <Skeleton className="mx-auto w-full h-full aspect-square rounded-full" />}
             </View>
