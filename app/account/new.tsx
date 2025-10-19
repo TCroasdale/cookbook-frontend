@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { useSession } from '@/contexts/AuthContext';
 import { API } from '@/lib/api';
 import { Link, useRouter } from 'expo-router';
 import React from "react";
@@ -30,6 +31,7 @@ export default function New() {
   })
 
   const [pageState, onPageStateChange] = React.useState({loading: false})
+  const {signIn} = useSession();
 
   const makeCreateAccountRequest = async () => {
 
@@ -37,7 +39,8 @@ export default function New() {
     API.POST("/users", { username: username, password: password, email: email },
       (response : any) => {
         console.log("success: ", response)
-        API.SetBearerToken(response.session)
+        signIn(response.session)
+
         router.navigate("/account/setup")
         onPageStateChange({loading: false})
       },

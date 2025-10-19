@@ -12,13 +12,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
+import { useSession } from '@/contexts/AuthContext';
 import { API } from '@/lib/api';
 import { Link, useRouter } from 'expo-router';
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
 export default function New() {
   const router = useRouter()
+  const { signIn } = useSession();
   const [username, onChangeUName] = React.useState('')
   const [email, onChangeEmail] = React.useState('')
   const [password, onChangePassword] = React.useState('')
@@ -30,13 +32,12 @@ export default function New() {
 
   const [pageState, onPageStateChange] = React.useState({loading: false})
 
-  const makeReturnAccountRequest = async () => {
-
+  const makeReturnAccountRequest = async () => { 
     onPageStateChange({loading: true})
     API.POST("/users/login", { aid: username, pass: password },
       (response : any) => {
         console.log("success: ", response)
-        API.SetBearerToken(response.token)
+        signIn(response.token)
         getProfileRequest()
       },
       (json : any) => {
@@ -95,9 +96,7 @@ export default function New() {
           <CardDescription>Sign in to save recipes, and add your friends</CardDescription>
         </CardHeader>
         <Separator />
-        {pageState.loading ?
-        <ActivityIndicator size="large" />
-      : <CardContent>
+       <CardContent>
           <View className="mb-2">
             {validation.username.valid ? <Label htmlFor="username">Your username or email</Label> :
             <Badge className="text-white text-sm" variant="destructive"><Text>{validation.username.reason}</Text></Badge> }
@@ -130,7 +129,7 @@ export default function New() {
             />
             
           </View>
-        </CardContent>}
+        </CardContent>
         <Separator />
         <CardFooter>
           <View className="w-full mx-auto">
