@@ -103,8 +103,8 @@ export default function New() {
         <ActivityIndicator size="large" />
       : <CardContent>
           <CardTitle className="mb-2">Post Text</CardTitle>
-          <Textarea className='col-span-10' numberOfLines={4} placeholder="Type your step here." onChangeText={(x) => validateLetter(x, onPostTextChange)} />
-        
+          <Textarea className='col-span-10' numberOfLines={4} placeholder="Type your text here." onChangeText={(x) => validateLetter(x, onPostTextChange)} />
+          
           <Accordion type='single' collapsible>
             <AccordionItem value='item-1'>
               <AccordionTrigger>

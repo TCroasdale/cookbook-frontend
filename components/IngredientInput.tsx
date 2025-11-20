@@ -7,8 +7,8 @@ import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function IngredientInput({ value, onValueChanged }) {
-  const [ingredient, onIngredientChange] = React.useState(value.ingredient)
-  React.useEffect(() => { onIngredientChange(value.ingredient) }, [value]);
+  const [name, onNameChange] = React.useState(value.name)
+  React.useEffect(() => { onNameChange(value.name) }, [value]);
   const [quantity, onQuantityChange] = React.useState(value.quantity)
   React.useEffect(() => { onQuantityChange(value.quantity) }, [value]);
   const [unit, onUnitChange] = React.useState(value.unit)
@@ -40,37 +40,37 @@ export default function IngredientInput({ value, onValueChanged }) {
     return x.replace(/[^a-zA-Z\s]/g, '')
   }
 
-  const onIngredientInput = (x: any) => {
+  const onNameInput = (x: any) => {
     const x_new = validateLetter(x)
-    onIngredientChange(x_new)
+    onNameChange(x_new)
 
-    onValueChanged({ingredient: x_new, quantity, unit})
+    onValueChanged({name: x_new, quantity, unit})
   }
 
   const onQuantityInput= (x: any) => {
     const x_new = validateNumber(x)
     onQuantityChange(x_new)
 
-    onValueChanged({ingredient, quantity: x_new, unit})
+    onValueChanged({name, quantity: x_new, unit})
   }
 
   const onUnitInput = (x: any) => {
     const x_new = x//validation(x)
     onUnitChange(x_new)
 
-    onValueChanged({ingredient, quantity, unit: x_new.value})
+    onValueChanged({name, quantity, unit: x_new.value})
   }
 
   return (
     <View className="grid grid-cols-6 gap-1">
       <View className="col-span-3">
         <Input
-          id="ingredient"
+          id="name"
           className="my-2"
           keyboardType="default"
           placeholder="Ingredient"
-          onChangeText={onIngredientInput}
-          value={ingredient}
+          onChangeText={onNameInput}
+          value={name}
         />
         </View>
       <View className="col-span-1">

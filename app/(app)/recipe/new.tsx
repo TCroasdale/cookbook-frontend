@@ -60,12 +60,12 @@ export default function New() {
     cb(x.replace(/[^a-zA-Z\s]/g, ''))
   }
 
-  const [ingredients, onIngredientsChange] = React.useState([{index: Number(1), value: {ingredient: '', quantity: '', unit: ''}}])
+  const [ingredients, onIngredientsChange] = React.useState([{index: Number(1), value: {name: '', quantity: '', unit: ''}}])
   const [currIngredientIX, onCurrIngredientIXChange] = React.useState(1)
   const addIngredient = () => {
     const ix = currIngredientIX + 1
     onCurrIngredientIXChange(ix)
-    onIngredientsChange([...ingredients, {index: ix, value: { ingredient: '', quantity: '', unit: ''}}])
+    onIngredientsChange([...ingredients, {index: ix, value: { name: '', quantity: '', unit: ''}}])
   }
   const removeIngredient = (ix : Number) => {
     const newIng = ingredients.filter((x) => ix != x.index)

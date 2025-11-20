@@ -166,7 +166,7 @@ export default function New() {
             <Button className="w-full" onPress={() => makeCreateAccountRequest()}>
               <Text>Create Account</Text>
             </Button>
-            <CardDescription className="mx-auto">Already have an account? <Link href="/account/return">Sign In</Link></CardDescription>
+            <CardDescription className="mx-auto">Already have an account? <Link href="/sign-in">Sign In</Link></CardDescription>
           </View>
         </CardFooter>
       </Card>

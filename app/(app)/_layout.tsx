@@ -5,8 +5,7 @@ import { ThemeProvider } from "@react-navigation/native";
 import { PortalHost } from "@rn-primitives/portal";
 import { Redirect, Stack } from "expo-router";
 import React from "react";
-import { ScrollView, StatusBar, Text } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar, Text } from "react-native";
 import "../../global.css";
 
 export default function AppLayout() {
@@ -30,14 +29,16 @@ export default function AppLayout() {
   return (
      <ThemeProvider value={NAV_THEME[colorScheme]}>
         <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <SafeAreaProvider>
-          <SafeAreaView className='flex h-screen' edges={['top']}>
-            <ScrollView>
-              <Stack />
+        {/* <SafeAreaProvider>
+          <SafeAreaView className='flex h-screen' edges={['top']}> */}
+            {/* <ScrollView> */}
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              </Stack>
               {/* <Slot /> */}
-            </ScrollView>
-          </SafeAreaView>
-        </SafeAreaProvider>
+            {/* </ScrollView> */}
+          {/* </SafeAreaView>
+        </SafeAreaProvider> */}
         <PortalHost />
     </ThemeProvider>
   )

@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Text } from '@/components/ui/text';
 import { API } from '@/lib/api';
+import { CreatePhotoResponse } from '@/lib/model/photo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
@@ -34,6 +35,7 @@ export default function New() {
   const [fileName, onFileNameChange] = React.useState('')
   const [hasData, onHasDataChange] = React.useState(false)
   const [userData, onUserDataChange] = React.useState({email: "", userName: ""})
+  const [uploadedPhotoID, onUploadedPhotoIDChange] = React.useState('')
   const inputFile = useRef<HTMLInputElement | null>(null);
 
   const startPhotoUpload = () => {
@@ -49,9 +51,9 @@ export default function New() {
     var data = new FormData()
     data.append('photo', file)
     API.UPLOAD("/photo", data, 
-      (response : any) => {
-        console.log("finished")
-        makeSaveProfileRequest()
+      (response : CreatePhotoResponse) => {
+        onUploadedPhotoIDChange(response.pid)
+        console.log("finished", response)
       },
       (response : any) => {
         console.log("validation errors")
@@ -66,7 +68,7 @@ export default function New() {
 
   const makeSaveProfileRequest = () => {
     onPageStateChange({loading: true})
-    API.PATCH("/profile", {name, isPublic}, 
+    API.PATCH("/profile", {name, isPublic, ppid: uploadedPhotoID}, 
       (response : any) => {
         console.log("finished")
         onPageStateChange({loading: false})
@@ -105,6 +107,8 @@ export default function New() {
       if (file == null) return
       const uri = URL.createObjectURL(file)
       onFileNameChange(uri)
+
+      startPhotoUpload()
     }
   }
 
@@ -140,7 +144,7 @@ export default function New() {
                   <AvatarFallback>
                     <Ionicons name="camera" size={32} color="gray" />
                   </AvatarFallback>
-                  <input ref={inputFile} type="file" accept="image/jpeg" onChange={onFileChange}/>
+                  <input ref={inputFile} type="file" accept="image/jpeg;image/png" onChange={onFileChange}/>
                 </Avatar>
               </TouchableOpacity>
               :
@@ -193,7 +197,7 @@ export default function New() {
         <Separator />
         <CardFooter>
           <View className="w-full mx-auto">
-            <Button className="w-full" onPress={() => startPhotoUpload()}>
+            <Button className="w-full" onPress={() => makeSaveProfileRequest()}>
               <Text>Save Profile</Text>
             </Button>
           </View>
